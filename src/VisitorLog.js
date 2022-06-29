@@ -1,5 +1,5 @@
 import React from "react";
-import {Card, CardBody, CardTitle} from "reactstrap";
+import {Button, Card, CardBody, CardTitle, Form, FormGroup, Input, InputGroup, InputGroupText, Label} from "reactstrap";
 
 class VisitorLog extends React.Component {
     constructor(props) {
@@ -7,8 +7,14 @@ class VisitorLog extends React.Component {
         this.state = {
             error: null,
             isLoaded: false,
-            entries: []
+            entries: [],
+
+            name: '',
+            message: ''
         }
+
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleChange = this.handleChange.bind(this);
     }
 
     componentDidMount() {
@@ -26,7 +32,32 @@ class VisitorLog extends React.Component {
                     error
                 })
             })
-        }
+    }
+
+    handleChange(event) {
+        const target = event.target
+        const value = target.value
+        const name = target.name
+        this.setState({
+            [name]: value
+        })
+    }
+
+
+    handleSubmit(event) {
+        event.preventDefault()
+        fetch("http://localhost:8080/rest/visitor-log", {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: this.state.name,
+                message: this.state.message
+            })
+        })
+    }
 
     render() {
         const { error, isLoaded, entries } = this.state;
@@ -41,6 +72,21 @@ class VisitorLog extends React.Component {
         } else {
             return (
                 <div>
+                    <Form onSubmit={this.handleSubmit}>
+                        <FormGroup row>
+                            <InputGroup>
+                                <InputGroupText>Name</InputGroupText>
+                                <Input name={"name"} onChange={this.handleChange} placeholder={"Johnathan Doe"}/>
+                            </InputGroup>
+                        </FormGroup>
+                        <FormGroup row>
+                            <InputGroup>
+                                <InputGroupText>Message</InputGroupText>
+                                <Input name={"message"} onChange={this.handleChange} type={"textarea"} placeholder={"J0hn D03 w@z h3r3!"}/>
+                                <Button type={"submit"}>Submit</Button>
+                            </InputGroup>
+                        </FormGroup>
+                    </Form>
                     {
                         entries.map(entry => (
                             <Card key={entry.id} >
