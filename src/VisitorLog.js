@@ -1,5 +1,5 @@
 import React from "react";
-import {Button, Card, CardBody, CardTitle, Form, FormGroup, Input, InputGroup, InputGroupText, Label} from "reactstrap";
+import {Button, Card, CardBody, CardTitle, Form, FormGroup, Input, InputGroup, InputGroupText} from "reactstrap";
 
 class VisitorLog extends React.Component {
     constructor(props) {
@@ -23,7 +23,7 @@ class VisitorLog extends React.Component {
             .then((data) => {
                 this.setState({
                     isLoaded: true,
-                    entries: data
+                    entries: data.content
                 })
             })
             .catch(error => {
@@ -46,7 +46,7 @@ class VisitorLog extends React.Component {
 
     handleSubmit(event) {
         event.preventDefault()
-        fetch("http://localhost:8080/rest/visitor-log", {
+        fetch("http://localhost:8080/rest/visitor-log",{
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
