@@ -1,4 +1,5 @@
 import React from "react";
+import {Card, CardBody, CardTitle} from "reactstrap";
 
 class VisitorLog extends React.Component {
     constructor(props) {
@@ -42,10 +43,10 @@ class VisitorLog extends React.Component {
                 <div>
                     {
                         entries.map(entry => (
-                            <div key={entry.id} className="card">
-                                <div className="card-title">{entry.name}</div>
-                                <div className="card-body">{entry.message}</div>
-                            </div>
+                            <Card key={entry.id} >
+                                <CardTitle>{entry.name}</CardTitle>
+                                <CardBody>{entry.message}</CardBody>
+                            </Card>
                         ))
                     }
                 </div>
