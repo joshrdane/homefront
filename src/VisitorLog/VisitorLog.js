@@ -7,13 +7,23 @@ import {
 } from "reactstrap";
 import EntryModal from "./EntryModal";
 
-class VisitorLog extends React.Component {
+export default class VisitorLog extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             error: null,
             isLoaded: false,
-            data: null
+
+            page: 1,
+            size: 10,
+
+            data: {
+                content: null,
+                pageable: {
+                    pageNumber: null
+                },
+                totalPages: null
+            }
         }
     }
 
@@ -21,8 +31,9 @@ class VisitorLog extends React.Component {
         this.load()
     }
 
-    load = () => {
-        fetch('http://localhost:8080/rest/visitor-log')
+    load() {
+        this.setState({ isLoaded: false })
+        fetch(`http://localhost:8080/rest/visitor-log?page=${this.state.page}&size=${this.state.size}`)
             .then(response => response.json())
             .then((data) => {
                 this.setState({
@@ -39,25 +50,24 @@ class VisitorLog extends React.Component {
     }
 
     getPagination(size) {
-        const { pageNumber, pageSize, totalPages } = this.state.pageable
-        const half = this.state.data.pageable.totalPages / 2
-        const start = Math.max(1, this.state.data.pageable.pageNumber + 1 - half)
-        const end = Math.min(this.state.totalPages, this.state.page + half + (this.state.totalPages % 2))
-        console.log("start")
-        console.log(this.state.totalPages)
-        console.log(half.toString())
-        console.log(start.toString())
-        console.log(end.toString())
-        return Array.from({length: Math.min(end - start + 1, size === null ? 5 : size)}, (start, i) => i + 1).map(i => (
-            <PaginationItem>
-                <PaginationLink key={"page" + i} active={(this.state.page === i).toString()}>
-                    {i}
+        const pageNumber = this.state.data.pageable.pageNumber
+        const totalPages = this.state.data.totalPages
+        const half = Math.floor(totalPages / 2)
+        const start = Math.max(0, pageNumber - half)
+        const end = Math.max(totalPages, pageNumber + half)
+        return Array.from({length: Math.min(end - start, size === null ? 5 : size)}, (start, i) => i + 1).map(i => (
+            <PaginationItem key={"page" + i}>
+                <PaginationLink active={(pageNumber === i - 1).toString()} disabled={pageNumber === i - 1} onClick={function () {
+                    this.setState({page: i})
+
+                }}>
+                    {'' + i}
                 </PaginationLink>
             </PaginationItem>
         ))
     }
 
-    render = () => {
+    render() {
         const { error, isLoaded, data } = this.state;
         if (error) {
             return (
@@ -85,7 +95,7 @@ class VisitorLog extends React.Component {
                         data.content.map(entry => (
                             <Card key={entry.id} >
                                 <CardTitle>{entry.name}</CardTitle>
-                                <CardBody>{entry.message}</CardBody>
+                                <CardBody>{entry.date}: {entry.message}</CardBody>
                             </Card>
                         ))
                     }
@@ -123,6 +133,3 @@ class VisitorLog extends React.Component {
         }
     }
 }
-
-
-export default VisitorLog
