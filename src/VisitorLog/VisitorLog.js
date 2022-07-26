@@ -2,10 +2,12 @@ import React from "react";
 import {
     Button,
     Card,
-    CardBody,
-    CardTitle, Pagination, PaginationItem, PaginationLink, Spinner
+    CardBody, CardFooter, CardHeader,
+    CardTitle,
+    Spinner
 } from "reactstrap";
 import EntryModal from "./EntryModal";
+import PaginationComponent from "../util/PaginationComponent";
 
 export default class VisitorLog extends React.Component {
     constructor(props) {
@@ -14,16 +16,9 @@ export default class VisitorLog extends React.Component {
             error: null,
             isLoaded: false,
 
-            page: 1,
-            size: 10,
-
-            data: {
-                content: null,
-                pageable: {
-                    pageNumber: null
-                },
-                totalPages: null
-            }
+            pageNumber: 1,
+            pageSize: 10,
+            pageTotal: 0
         }
     }
 
@@ -33,12 +28,12 @@ export default class VisitorLog extends React.Component {
 
     load() {
         this.setState({ isLoaded: false })
-        fetch(`http://localhost:8080/rest/visitor-log?page=${this.state.page}&size=${this.state.size}`)
+        fetch('http://localhost:8080/rest/visitor-log')
             .then(response => response.json())
             .then((data) => {
                 this.setState({
                     isLoaded: true,
-                    data: data
+                    data: data,
                 })
             })
             .catch(error => {
@@ -49,26 +44,8 @@ export default class VisitorLog extends React.Component {
             })
     }
 
-    getPagination(size) {
-        const pageNumber = this.state.data.pageable.pageNumber
-        const totalPages = this.state.data.totalPages
-        const half = Math.floor(totalPages / 2)
-        const start = Math.max(0, pageNumber - half)
-        const end = Math.max(totalPages, pageNumber + half)
-        return Array.from({length: Math.min(end - start, size === null ? 5 : size)}, (start, i) => i + 1).map(i => (
-            <PaginationItem key={"page" + i}>
-                <PaginationLink active={(pageNumber === i - 1).toString()} disabled={pageNumber === i - 1} onClick={function () {
-                    this.setState({page: i})
-
-                }}>
-                    {'' + i}
-                </PaginationLink>
-            </PaginationItem>
-        ))
-    }
-
     render() {
-        const { error, isLoaded, data } = this.state;
+        const { error, isLoaded, data, pageNumber, pageSize } = this.state;
         if (error) {
             return (
                 <div>Error: {error.message}</div>
@@ -89,45 +66,22 @@ export default class VisitorLog extends React.Component {
         } else {
             return (
                 <div>
-
-                    <EntryModal/>
+                    <h1 className={"m-1"}>Visitor Log</h1>
+                    <div className={"m-1"}>
+                        <EntryModal/>
+                    </div>
                     {
                         data.content.map(entry => (
-                            <Card key={entry.id} >
-                                <CardTitle>{entry.name}</CardTitle>
-                                <CardBody>{entry.date}: {entry.message}</CardBody>
+                            <Card className={"m-1"} key={entry.id}>
+                                <CardHeader>Name: {entry.name}</CardHeader>
+                                <CardBody>Message: {entry.message}</CardBody>
+                                <CardFooter>{new Date(entry.date).toLocaleString()}</CardFooter>
                             </Card>
                         ))
                     }
-                    <Pagination>
-                        <PaginationItem>
-                            <PaginationLink
-                                first
-                                href="#"
-                            />
-                        </PaginationItem>
-                        <PaginationItem>
-                            <PaginationLink
-                                href="#"
-                                previous
-                            />
-                        </PaginationItem>
-                        {
-                            this.getPagination(5)
-                        }
-                        <PaginationItem>
-                            <PaginationLink
-                                href="#"
-                                next
-                            />
-                        </PaginationItem>
-                        <PaginationItem>
-                            <PaginationLink
-                                href="#"
-                                last
-                            />
-                        </PaginationItem>
-                    </Pagination>
+                    <div className={"m-1"}>
+                        <PaginationComponent/>
+                    </div>
                 </div>
             )
         }
